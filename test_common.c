@@ -117,8 +117,13 @@ int main(int argc, char **argv)
                     str[i] = (buf[i + j] == ',' || buf[i + j] == '\n')
                                  ? '\0'
                                  : buf[i + j];
-                    if (str[i] != '\0' && rand() % 100 > 30)
-                        str[i] = 97 + rand() % 26;
+                    if (str[i] == '\0') {
+                        char tmp = str[i - 1];
+                        str[i - 1] = 97 + rand() % 26;
+                        while (str[i - 1] == tmp)
+                            str[i - 1] = 97 + rand() % 26;
+                    }
+
                     j += (buf[i + j] == ',');
                 }
 
@@ -128,15 +133,15 @@ int main(int argc, char **argv)
                     rmcrlf(word);
 
                     t1 = tvgetf();
-                    if (bloom_test(bloom, word)) {
-                        res = tst_search(root, word);
-                        if (res)
-                            right++;
-                        else
-                            wrong++;
-                    } else {
-                        bloom_right++;
-                    }
+                    // if (bloom_test(bloom, word)) {
+                    res = tst_search(root, word);
+                    if (res)
+                        right++;
+                    else
+                        wrong++;
+                    //} else {
+                    bloom_right++;
+                    //}
                     t2 = tvgetf();
 
                     time += (t2 - t1);
