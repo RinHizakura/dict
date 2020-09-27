@@ -75,6 +75,13 @@ plot: $(TESTS)
 		| grep 'ternary_tree, loaded 206849 words'\
 		| grep -Eo '[0-9]+\.[0-9]+' > ref_data.csv
 
+
+
+perf: $(TESTS)
+	taskset -c 5 ./test_common --perf CPY > ./plot/out_cpy.txt 
+	taskset -c 5 ./test_common --perf REF > ./plot/out_ref.txt
+
+
 clean:
 	$(RM) $(TESTS) $(OBJS)
 	$(RM) $(deps)

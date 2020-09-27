@@ -103,6 +103,57 @@ int main(int argc, char **argv)
         free(pool);
         return stat;
     }
+    /* Here's a trick for setting test code for performance analysis */
+    else if (argc == 3 && strcmp(argv[1], "--perf") == 0) {
+        srand(1);
+        for (int round = 0; round < 100; round++) {
+            FILE *fp = fopen("cities.txt", "r");
+            int right = 0, bloom_right = 0, wrong = 0;
+            double time = 0;
+
+            while (fgets(buf, WORDMAX, fp)) {
+                char str[WORDMAX];
+                for (int i = 0, j = 0; buf[i]; i++) {
+                    str[i] = (buf[i + j] == ',' || buf[i + j] == '\n')
+                                 ? '\0'
+                                 : buf[i + j];
+                    if (str[i] != '\0' && rand() % 100 > 30)
+                        str[i] = 97 + rand() % 26;
+                    j += (buf[i + j] == ',');
+                }
+
+                char *s = str;
+                while (*s) {
+                    strcpy(word, s);
+                    rmcrlf(word);
+
+                    t1 = tvgetf();
+                    if (bloom_test(bloom, word)) {
+                        res = tst_search(root, word);
+                        if (res)
+                            right++;
+                        else
+                            wrong++;
+                    } else {
+                        bloom_right++;
+                    }
+                    t2 = tvgetf();
+
+                    time += (t2 - t1);
+                    int len = strlen(s);
+                    s += len + 1;
+                }
+            }
+            fclose(fp);
+
+            printf("%d, %.6f, %.3f, %.3f\n", round, time,
+                   (float) (bloom_right + right) /
+                       (float) (right + wrong + bloom_right),
+                   (float) bloom_right / (float) (right + wrong + bloom_right));
+        }
+        return 0;
+    }
+
 
     FILE *output;
     output = fopen("ref.txt", "a");

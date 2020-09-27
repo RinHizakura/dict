@@ -1,0 +1,88 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+BENCH_H	bench.h	2;"	d
+BENCH_TEST_FILE	test_common.c	20;"	d	file:
+CFLAGS	Makefile	/^CFLAGS = -O0 -Wall -Werror -g$/;"	m
+DEL	test_common.c	/^enum { INS, DEL, WRDMAX = 256, STKMAX = 512, LMAX = 1024 };$/;"	e	enum:__anon1	file:
+DICT_FILE	bench.c	7;"	d	file:
+GIT_HOOKS	Makefile	/^GIT_HOOKS := .git\/hooks\/applied$/;"	m
+HashNumber	test_common.c	12;"	d	file:
+INS	test_common.c	/^enum { INS, DEL, WRDMAX = 256, STKMAX = 512, LMAX = 1024 };$/;"	e	enum:__anon1	file:
+IN_FILE	test_common.c	32;"	d	file:
+LMAX	test_common.c	/^enum { INS, DEL, WRDMAX = 256, STKMAX = 512, LMAX = 1024 };$/;"	e	enum:__anon1	file:
+OBJS	Makefile	/^OBJS := \\$/;"	m
+OBJS_LIB	Makefile	/^OBJS_LIB = \\$/;"	m
+PREFIX_LEN	bench.c	9;"	d	file:
+PREFIX_SEARCH_H	tst.h	2;"	d
+Q	Makefile	/^    Q := @$/;"	m
+Q	Makefile	/^    Q :=$/;"	m
+REF	test_common.c	/^int REF = INS;$/;"	v
+STKMAX	test_common.c	/^enum { INS, DEL, WRDMAX = 256, STKMAX = 512, LMAX = 1024 };$/;"	e	enum:__anon1	file:
+STKMAX	tst.c	5;"	d	file:
+TESTS	Makefile	/^TESTS = test_common$/;"	m
+TEST_DATA	Makefile	/^TEST_DATA = s Tai$/;"	m
+TableSize	test_common.c	11;"	d	file:
+VECHO	Makefile	/^    VECHO = @printf$/;"	m
+VECHO	Makefile	/^    VECHO = @true$/;"	m
+WORDMAX	bench.c	8;"	d	file:
+WRDMAX	test_common.c	/^enum { INS, DEL, WRDMAX = 256, STKMAX = 512, LMAX = 1024 };$/;"	e	enum:__anon1	file:
+WRDMAX	tst.c	4;"	d	file:
+_BLOOM_H	bloom.h	2;"	d
+add_warning	scripts/commit-msg.hook	/^add_warning() {$/;"	f
+bench_test	bench.c	/^int bench_test(const tst_node *root, char *out_file, const int max)$/;"	f
+bits	bloom.c	/^    void *bits;$/;"	m	struct:bloom_filter	file:
+bloom_add	bloom.c	/^void bloom_add(bloom_t filter, const void *item)$/;"	f
+bloom_add_hash	bloom.c	/^void bloom_add_hash(bloom_t filter, hash_function func)$/;"	f
+bloom_create	bloom.c	/^bloom_t bloom_create(size_t size)$/;"	f
+bloom_filter	bloom.c	/^struct bloom_filter {$/;"	s	file:
+bloom_free	bloom.c	/^void bloom_free(bloom_t filter)$/;"	f
+bloom_hash	bloom.c	/^struct bloom_hash {$/;"	s	file:
+bloom_t	bloom.h	/^typedef struct bloom_filter *bloom_t;$/;"	t	typeref:struct:bloom_filter
+bloom_test	bloom.c	/^bool bloom_test(bloom_t filter, const void *item)$/;"	f
+data	tst.c	/^    void *data[STKMAX];$/;"	m	struct:tst_stack	file:
+deps	Makefile	/^deps := $(OBJS:%.o=.%.o.d)$/;"	m
+display_warnings	scripts/commit-msg.hook	/^display_warnings() {$/;"	f
+djb2	bloom.c	/^static unsigned int djb2(const void *_str)$/;"	f	file:
+eqkid	tst.c	/^    struct tst_node *eqkid; \/* ternary equal child pointer *\/$/;"	m	struct:tst_node	typeref:struct:tst_node::tst_node	file:
+func	bloom.c	/^    hash_function func;$/;"	m	struct:bloom_hash	file:
+func	bloom.c	/^    struct bloom_hash *func;$/;"	m	struct:bloom_filter	typeref:struct:bloom_filter::bloom_hash	file:
+hash_function	bloom.h	/^typedef unsigned int (*hash_function)(const void *data);$/;"	t
+hikid	tst.c	/^    struct tst_node *hikid; \/* ternary high child pointer *\/$/;"	m	struct:tst_node	typeref:struct:tst_node::tst_node	file:
+idx	tst.c	/^    size_t idx;$/;"	m	struct:tst_stack	file:
+jenkins	bloom.c	/^static unsigned int jenkins(const void *_str)$/;"	f	file:
+key	tst.c	/^    char key;               \/* char key for node (null for node with string) *\/$/;"	m	struct:tst_node	file:
+lokid	tst.c	/^    struct tst_node *lokid; \/* ternary low child pointer *\/$/;"	m	struct:tst_node	typeref:struct:tst_node::tst_node	file:
+main	test_common.c	/^int main(int argc, char **argv)$/;"	f
+next	bloom.c	/^    struct bloom_hash *next;$/;"	m	struct:bloom_hash	typeref:struct:bloom_hash::bloom_hash	file:
+poolsize	test_common.c	/^long poolsize = 2000000 * WRDMAX;$/;"	v
+prompt_help	scripts/commit-msg.hook	/^prompt_help() {$/;"	f
+read_commit_message	scripts/commit-msg.hook	/^read_commit_message() {$/;"	f
+refcnt	tst.c	/^    unsigned refcnt;        \/* refcnt tracks occurrence of word (for delete) *\/$/;"	m	struct:tst_node	file:
+rmcrlf	test_common.c	/^static void rmcrlf(char *s)$/;"	f	file:
+set_colors	scripts/commit-msg.hook	/^set_colors() {$/;"	f
+set_editor	scripts/commit-msg.hook	/^set_editor() {$/;"	f
+size	bloom.c	/^    size_t size;$/;"	m	struct:bloom_filter	file:
+tst_del_word	tst.c	/^static void *tst_del_word(tst_node **root,$/;"	f	file:
+tst_free	tst.c	/^void tst_free(tst_node *p)$/;"	f
+tst_free_all	tst.c	/^void tst_free_all(tst_node *p)$/;"	f
+tst_get_key	tst.c	/^char tst_get_key(const tst_node *node)$/;"	f
+tst_get_refcnt	tst.c	/^unsigned tst_get_refcnt(const tst_node *node)$/;"	f
+tst_get_string	tst.c	/^char *tst_get_string(const tst_node *node)$/;"	f
+tst_ins_del	tst.c	/^void *tst_ins_del(tst_node **root, const char *s, const int del, const int cpy)$/;"	f
+tst_node	tst.c	/^typedef struct tst_node {$/;"	s	file:
+tst_node	tst.c	/^} tst_node;$/;"	t	typeref:struct:tst_node	file:
+tst_node	tst.h	/^typedef struct tst_node tst_node;$/;"	t	typeref:struct:tst_node
+tst_search	tst.c	/^void *tst_search(const tst_node *p, const char *s)$/;"	f
+tst_search_prefix	tst.c	/^void *tst_search_prefix(const tst_node *root,$/;"	f
+tst_stack	tst.c	/^typedef struct tst_stack {$/;"	s	file:
+tst_stack	tst.c	/^} tst_stack;$/;"	t	typeref:struct:tst_stack	file:
+tst_stack_pop	tst.c	/^static void *tst_stack_pop(tst_stack *s)$/;"	f	file:
+tst_stack_push	tst.c	/^static void *tst_stack_push(tst_stack *s, void *node)$/;"	f	file:
+tst_suggest	tst.c	/^void tst_suggest(const tst_node *p,$/;"	f
+tst_traverse_fn	tst.c	/^void tst_traverse_fn(const tst_node *p,$/;"	f
+tvgetf	bench.c	/^double tvgetf()$/;"	f
+validate_commit_message	scripts/commit-msg.hook	/^validate_commit_message() {$/;"	f
