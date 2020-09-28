@@ -45,10 +45,10 @@ test:  $(TESTS)
 	echo 3 | sudo tee /proc/sys/vm/drop_caches;
 	sudo perf stat --repeat 100 \
                 -e cache-misses,cache-references,instructions,cycles \
-                ./test_common --bench CPY $(TEST_DATA)
+                ./test_common --bench CPY $(TEST_DATA) > /dev/null
 	sudo perf stat --repeat 100 \
                 -e cache-misses,cache-references,instructions,cycles \
-	        ./test_common --bench REF $(TEST_DATA)
+	        ./test_common --bench REF $(TEST_DATA) > /dev/null
 
 bench: $(TESTS)
 	@echo "COPY mechanism"
@@ -75,11 +75,16 @@ plot: $(TESTS)
 		| grep 'ternary_tree, loaded 206849 words'\
 		| grep -Eo '[0-9]+\.[0-9]+' > ref_data.csv
 
-
-
+PREFIX_STR = Taiwan
 perf: $(TESTS)
-	taskset -c 5 ./test_common --perf CPY > ./plot/out_cpy.txt 
-	taskset -c 5 ./test_common --perf REF > ./plot/out_ref.txt
+	sync
+	sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+	sudo perf stat --repeat 100 -e cache-misses:u,cache-references:u \
+        	./test_common --bench CPY s ${PREFIX_STR} > /dev/null  
+	sync
+	sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+	sudo perf stat --repeat 100 -e cache-misses:u,cache-references:u \
+        	./test_common --bench REF s ${PREFIX_STR} > /dev/null
 
 
 clean:
