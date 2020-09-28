@@ -70,6 +70,8 @@ int main(int argc, char **argv)
         Top = pool;
     }
 
+    tst_init();
+
     char buf[WORDMAX];
     while (fgets(buf, WORDMAX, fp)) {
         int offset = 0;
@@ -106,24 +108,17 @@ int main(int argc, char **argv)
     /* Here's a trick for setting test code for performance analysis */
     else if (argc == 3 && strcmp(argv[1], "--perf") == 0) {
         srand(1);
-        for (int round = 0; round < 100; round++) {
-            FILE *fp = fopen("cities.txt", "r");
+        for (int round = 0; round < 10; round++) {
             int right = 0, bloom_right = 0, wrong = 0;
             double time = 0;
 
+            FILE *fp = fopen("cities.txt", "r");
             while (fgets(buf, WORDMAX, fp)) {
                 char str[WORDMAX];
                 for (int i = 0, j = 0; buf[i]; i++) {
                     str[i] = (buf[i + j] == ',' || buf[i + j] == '\n')
                                  ? '\0'
                                  : buf[i + j];
-                    if (str[i] == '\0') {
-                        char tmp = str[i - 1];
-                        str[i - 1] = 97 + rand() % 26;
-                        while (str[i - 1] == tmp)
-                            str[i - 1] = 97 + rand() % 26;
-                    }
-
                     j += (buf[i + j] == ',');
                 }
 
@@ -133,15 +128,15 @@ int main(int argc, char **argv)
                     rmcrlf(word);
 
                     t1 = tvgetf();
-                    // if (bloom_test(bloom, word)) {
-                    res = tst_search(root, word);
-                    if (res)
-                        right++;
-                    else
-                        wrong++;
-                    //} else {
-                    bloom_right++;
-                    //}
+                    if (bloom_test(bloom, word)) {
+                        res = tst_search(root, word);
+                        if (res)
+                            right++;
+                        else
+                            wrong++;
+                    } else {
+                        bloom_right++;
+                    }
                     t2 = tvgetf();
 
                     time += (t2 - t1);

@@ -24,7 +24,7 @@ $(GIT_HOOKS):
 	@echo
 
 OBJS_LIB = \
-    tst.o bloom.o
+    tst.o bloom.o pool.o
 
 OBJS := \
     $(OBJS_LIB) \
@@ -79,18 +79,32 @@ PREFIX_STR = Taiwan
 perf: $(TESTS)
 	sync
 	sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-	sudo perf stat --repeat 100 -e cache-misses:u,cache-references:u \
-        	./test_common --bench CPY s ${PREFIX_STR} > /dev/null  
+	sudo perf stat -e cache-misses:u,cache-references:u\
+        	./test_common --perf CPY > /dev/null  
 	sync
 	sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-	sudo perf stat --repeat 100 -e cache-misses:u,cache-references:u \
-        	./test_common --bench REF s ${PREFIX_STR} > /dev/null
+	sudo perf stat -e cache-misses:u,cache-references:u\
+        	./test_common --perf REF > /dev/null  
 
+cpyperf: $(TESTS)
+	sync
+	sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+	sudo perf  record -e cache-misses:u,cache-references:u\
+        	./test_common --perf CPY > /dev/null  
+refperf: $(TESTS)	
+	sync
+	sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+	sudo perf record  -e cache-misses:u,cache-references:u\
+        	./test_common --perf REF > /dev/null
+
+report:
+	sudo perf report
 
 clean:
 	$(RM) $(TESTS) $(OBJS)
 	$(RM) $(deps)
 	$(RM) bench_cpy.txt bench_ref.txt ref.txt cpy.txt
 	$(RM) *.csv
+	$(RM) perf.data*
 
 -include $(deps)

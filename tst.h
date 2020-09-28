@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "pool.h"
 
 /* forward declaration of ternary search tree */
 typedef struct tst_node tst_node;
@@ -69,5 +70,7 @@ void tst_free(tst_node *p);
 char tst_get_key(const tst_node *node);
 unsigned tst_get_refcnt(const tst_node *node);
 char *tst_get_string(const tst_node *node);
+void tst_init();
 
+pool_t tst_node_pool;
 #endif
