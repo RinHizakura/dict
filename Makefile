@@ -23,6 +23,11 @@ $(GIT_HOOKS):
 	@scripts/install-git-hooks
 	@echo
 
+ifeq ("$(MEMPOOL)","1")
+    CFLAGS += -DMEMPOOL
+endif
+
+
 OBJS_LIB = \
     tst.o bloom.o pool.o
 
@@ -75,28 +80,18 @@ plot: $(TESTS)
 		| grep 'ternary_tree, loaded 206849 words'\
 		| grep -Eo '[0-9]+\.[0-9]+' > ref_data.csv
 
-PREFIX_STR = Taiwan
 perf: $(TESTS)
-	sync
-	sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-	sudo perf stat -e cache-misses:u,cache-references:u\
-        	./test_common --perf CPY > /dev/null  
-	sync
-	sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-	sudo perf stat -e cache-misses:u,cache-references:u\
-        	./test_common --perf REF > /dev/null  
-
-cpyperf: $(TESTS)
-	sync
-	sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-	sudo perf  record -e cache-misses:u,cache-references:u\
-        	./test_common --perf CPY > /dev/null  
-refperf: $(TESTS)	
-	sync
-	sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-	sudo perf record  -e cache-misses:u,cache-references:u\
-        	./test_common --perf REF > /dev/null
-
+	@make clean > /dev/null
+	@make > /dev/null
+	@sudo perf stat --repeat 10 -e cache-misses:u,cache-references:u\
+        	./test_common REF --file input_rand.txt > /dev/null 
+	@make clean > /dev/null
+	@make MEMPOOL=1	> /dev/null
+	@sudo perf stat --repeat 10 -e cache-misses:u,cache-references:u\
+        	./test_common REF --file input_rand.txt > /dev/null 
+record:
+	sudo perf record -e cache-misses:u,cache-references:u\
+        	./test_common REF --file input_rand.txt > /dev/null 
 report:
 	sudo perf report
 

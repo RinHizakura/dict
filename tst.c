@@ -42,6 +42,15 @@ static void *tst_stack_pop(tst_stack *s)
     return node;
 }
 
+static inline void free_node(tst_node *n)
+{
+#ifndef MEMPOOL
+    free(n);
+#else
+    pool_free(&tst_node_pool, n);
+#endif
+}
+
 /** delete current data-node and parent, update 'node' to new parent.
  *  before delete the current refcnt is checked, if non-zero, occurrences
  *  of the word remain in buffer the node is not deleted, if refcnt zero,
@@ -70,13 +79,11 @@ static void *tst_del_word(tst_node **root,
         while (!parent->lokid && !parent->hikid && !victim->lokid &&
                !victim->hikid) {
             parent->eqkid = NULL;
-            // free(victim);
-            pool_free(&tst_node_pool, victim);
+            free_node(victim);
             victim = parent;
             parent = tst_stack_pop(stk);
             if (!parent) { /* last word & root node */
-                           // free(victim);
-                pool_free(&tst_node_pool, victim);
+                free_node(victim);
                 return (void *) (*root = NULL);
             }
         }
@@ -101,8 +108,7 @@ static void *tst_del_word(tst_node **root,
                     parent->hikid = victim->lokid;
                 else
                     parent->eqkid = victim->lokid;
-                // free(victim);
-                pool_free(&tst_node_pool, victim);
+                free_node(victim);
                 victim = NULL;
             } else if (!victim->hikid->lokid) { /* check for lokid in hi tree */
                 /* opposite rotation */
@@ -115,36 +121,30 @@ static void *tst_del_word(tst_node **root,
                     parent->hikid = victim->hikid;
                 else
                     parent->eqkid = victim->hikid;
-                // free(victim);
-                pool_free(&tst_node_pool, victim);
+                free_node(victim);
                 victim = NULL;
             } else /* can't rotate, return, leaving victim->eqkid NULL */
                 return NULL;
         } else if (victim->lokid) { /* only lokid, replace victim with lokid */
             parent->eqkid = victim->lokid;
-            // free(victim);
-            pool_free(&tst_node_pool, victim);
+            free_node(victim);
             victim = NULL;
         } else if (victim->hikid) { /* only hikid, replace victim with hikid */
             parent->eqkid = victim->hikid;
-            // free(victim);
-            pool_free(&tst_node_pool, victim);
+            free_node(victim);
             victim = NULL;
         } else { /* victim - no children, but parent has other children */
             if (victim == parent->lokid) { /* if parent->lokid - trim */
                 parent->lokid = NULL;
-                // free(victim);
-                pool_free(&tst_node_pool, victim);
+                free_node(victim);
                 victim = NULL;
             } else if (victim == parent->hikid) { /* if parent->hikid - trim */
                 parent->hikid = NULL;
-                // free(victim);
-                pool_free(&tst_node_pool, victim);
+                free_node(victim);
                 victim = NULL;
             } else { /* victim was parent->eqkid, but parent->lo/hikid exists */
                 parent->eqkid = NULL; /* set eqkid NULL */
-                                      // free(victim);
-                pool_free(&tst_node_pool, victim);
+                free_node(victim);
                 victim = parent;             /* set parent = victim */
                 parent = tst_stack_pop(stk); /* get new parent */
                 /* if both victim hi/lokid are present */
@@ -160,8 +160,7 @@ static void *tst_del_word(tst_node **root,
                             parent->hikid = victim->lokid;
                         else
                             parent->eqkid = victim->lokid;
-                        // free(victim);
-                        pool_free(&tst_node_pool, victim);
+                        free_node(victim);
                         victim = NULL;
                     } else if (!victim->hikid->lokid) {
                         victim->hikid->lokid = victim->lokid;
@@ -173,8 +172,7 @@ static void *tst_del_word(tst_node **root,
                             parent->hikid = victim->hikid;
                         else
                             parent->eqkid = victim->hikid;
-                        // free(victim);
-                        pool_free(&tst_node_pool, victim);
+                        free_node(victim);
                         victim = NULL;
                     } else
                         return NULL;
@@ -190,8 +188,7 @@ static void *tst_del_word(tst_node **root,
                             parent->eqkid = victim->lokid;
                     } else /* we are new root node, update root */
                         *root = victim->lokid; /* make last node root */
-                                               // free(victim);
-                    pool_free(&tst_node_pool, victim);
+                    free_node(victim);
                     victim = NULL;
                 }
                 /* if only hikid, rewire to parent */
@@ -205,8 +202,8 @@ static void *tst_del_word(tst_node **root,
                             parent->eqkid = victim->hikid;
                     } else /* we are new root node, update root */
                         *root = victim->hikid; /* make last node root */
-                                               // free(victim);
-                    pool_free(&tst_node_pool, victim);
+
+                    free_node(victim);
                     victim = NULL;
                 }
             }
@@ -273,19 +270,18 @@ void *tst_ins_del(tst_node **root, const char *s, const int del, const int cpy)
          * "Conditional jump or move depends on uninitialised value(s)"
          */
 
-        /*
+#ifndef MEMPOOL
         if (!(*pcurr = calloc(1, sizeof **pcurr))) {
-                fprintf(stderr, "error: tst_insert(), memory exhausted.\n");
-                return NULL;
-            }*/
-
-
+            fprintf(stderr, "error: tst_insert(), memory exhausted.\n");
+            return NULL;
+        }
+#else
         if (!(*pcurr = pool_alloc(&tst_node_pool))) {
             fprintf(stderr, "error: tst_insert(), memory exhausted.\n");
             return NULL;
         }
         memset(*pcurr, 0, sizeof(**pcurr));
-
+#endif
         curr = *pcurr;
         curr->key = *p;
         curr->refcnt = 1;
@@ -437,7 +433,9 @@ void __tst_free_all(tst_node *p)
     __tst_free_all(p->hikid);
     if (!p->key)
         free(p->eqkid);
-    // free(p);
+#ifndef MEMPOOL
+    free(p);
+#endif
 }
 
 void tst_free_all(tst_node *p)
@@ -449,7 +447,7 @@ void tst_free_all(tst_node *p)
 /** free the ternary search tree rooted at p, data storage external. */
 void tst_free(tst_node *p)
 {
-    /*
+#ifndef MEMPOOL
     if (!p)
         return;
     tst_free(p->lokid);
@@ -457,8 +455,9 @@ void tst_free(tst_node *p)
         tst_free(p->eqkid);
     tst_free(p->hikid);
     free(p);
-    */
+#else
     pool_free_all(&tst_node_pool);
+#endif
 }
 
 /** access functions tst_get_key(), tst_get_refcnt, & tst_get_string().
