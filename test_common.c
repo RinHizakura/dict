@@ -16,9 +16,10 @@
 
 typedef enum mode Mode;
 enum mode {
-    CMD_MODE = 0,
+    INPUT_MODE = 0,
     BENCH_MODE = 1,
     FILE_MODE = 2,
+    CMD_MODE = 3,
 };
 
 /** constants insert, delete, max word(s) & stack nodes */
@@ -54,12 +55,13 @@ int main(int argc, char **argv)
     struct option opts[] = {
         {"bench", 0, NULL, 'b'},
         {"file", 1, NULL, 'f'},
+        {"cmd", 1, NULL, 'c'},
     };
 
-    Mode mode = CMD_MODE;
+    Mode mode = INPUT_MODE;
     int c;
-    char logfile_name[WRDMAX];
-    while ((c = getopt_long(argc, argv, "bpf:", opts, &option_index)) != -1) {
+    char paramstr[WRDMAX];
+    while ((c = getopt_long(argc, argv, "bpf:c:", opts, &option_index)) != -1) {
         switch (c) {
         case 'b':
             if (!mode)
@@ -72,8 +74,18 @@ int main(int argc, char **argv)
         case 'f':
             if (!mode) {
                 mode = FILE_MODE;
-                strncpy(logfile_name, optarg, WRDMAX);
-                logfile_name[WRDMAX - 1] = '\0';
+                strncpy(paramstr, optarg, WRDMAX);
+                paramstr[WRDMAX - 1] = '\0';
+            } else {
+                fprintf(stderr, "Too many option.\n");
+                return -1;
+            }
+            break;
+        case 'c':
+            if (!mode) {
+                mode = CMD_MODE;
+                strncpy(paramstr, optarg, WRDMAX);
+                paramstr[WRDMAX - 1] = '\0';
             } else {
                 fprintf(stderr, "Too many option.\n");
                 return -1;
@@ -159,9 +171,9 @@ int main(int argc, char **argv)
         free(pool);
         return stat;
     case FILE_MODE:
-        logfile = fopen(logfile_name, "r");
+        logfile = fopen(paramstr, "r");
         if (!logfile) {
-            fprintf(stderr, "error: file open failed '%s'.\n", logfile_name);
+            fprintf(stderr, "error: file open failed '%s'.\n", paramstr);
             return 1;
         }
         break;
@@ -170,7 +182,7 @@ int main(int argc, char **argv)
     }
 
     for (;;) {
-        if (mode == CMD_MODE)
+        if (mode == INPUT_MODE)
             printf(
                 "\nCommands:\n"
                 " a  add word to the tree\n"
@@ -180,12 +192,13 @@ int main(int argc, char **argv)
                 " q  quit, freeing all data\n\n"
                 "choice: ");
 
-        if (mode == CMD_MODE)
+        if (mode == INPUT_MODE)
             fgets(buf, WORDMAX, stdin);
         else if (mode == FILE_MODE) {
             if (!fgets(buf, WORDMAX, logfile))
                 break;
-        }
+        } else if (mode == CMD_MODE)
+            strncpy(buf, paramstr, 1);
         /* else case may not happen...... */
 
         switch (*buf) {
@@ -193,6 +206,8 @@ int main(int argc, char **argv)
             printf("\nenter word to add: ");
             if (mode == FILE_MODE)
                 strcpy(Top, &buf[2]);
+            else if (mode == CMD_MODE)
+                strcpy(Top, &paramstr[1]);
             else if (!fgets(Top, sizeof word, stdin)) {
                 fprintf(stderr, "error: insufficient input.\n");
                 break;
@@ -218,6 +233,8 @@ int main(int argc, char **argv)
             printf("\nfind word in tree: ");
             if (mode == FILE_MODE)
                 strcpy(word, &buf[2]);
+            else if (mode == CMD_MODE)
+                strcpy(word, &paramstr[1]);
             else if (!fgets(word, sizeof word, stdin)) {
                 fprintf(stderr, "error: insufficient input.\n");
                 break;
@@ -247,9 +264,11 @@ int main(int argc, char **argv)
             break;
         case 's':
             printf("\nfind words matching prefix (at least 1 char): ");
-            if (mode == FILE_MODE) {
+            if (mode == FILE_MODE)
                 strcpy(word, &buf[2]);
-            } else if (!fgets(word, sizeof word, stdin)) {
+            else if (mode == CMD_MODE)
+                strcpy(word, &paramstr[1]);
+            else if (!fgets(word, sizeof word, stdin)) {
                 fprintf(stderr, "error: insufficient input.\n");
                 break;
             }
@@ -269,6 +288,8 @@ int main(int argc, char **argv)
             printf("\nenter word to del: ");
             if (mode == FILE_MODE)
                 strcpy(word, &buf[2]);
+            else if (mode == CMD_MODE)
+                strcpy(word, &paramstr[1]);
             else if (!fgets(word, sizeof word, stdin)) {
                 fprintf(stderr, "error: insufficient input.\n");
                 break;
@@ -293,6 +314,9 @@ int main(int argc, char **argv)
             fprintf(stderr, "error: invalid selection.\n");
             break;
         }
+
+        if (mode == CMD_MODE)
+            break;
     }
 
 quit:
