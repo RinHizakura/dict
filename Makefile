@@ -83,11 +83,11 @@ plot: $(TESTS)
 perf: $(TESTS)
 	@make clean > /dev/null
 	@make > /dev/null
-	@sudo perf stat --repeat 10 -e cache-misses:u,cache-references:u\
+	@sudo perf stat -e cache-misses:u,cache-references:u\
         	./test_common REF --file input_rand.txt > /dev/null 
 	@make clean > /dev/null
 	@make MEMPOOL=1	> /dev/null
-	@sudo perf stat --repeat 10 -e cache-misses:u,cache-references:u\
+	@sudo perf stat -e cache-misses:u,cache-references:u\
         	./test_common REF --file input_rand.txt > /dev/null 
 record:
 	sudo perf record -e cache-misses:u,cache-references:u\

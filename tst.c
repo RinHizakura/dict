@@ -423,25 +423,19 @@ void tst_traverse_fn(const tst_node *p,
 }
 
 /** free the ternary search tree rooted at p, data storage internal. */
-void __tst_free_all(tst_node *p)
+void tst_free_all(tst_node *p)
 {
     if (!p)
         return;
-    __tst_free_all(p->lokid);
+    tst_free_all(p->lokid);
     if (p->key)
-        __tst_free_all(p->eqkid);
-    __tst_free_all(p->hikid);
+        tst_free_all(p->eqkid);
+    tst_free_all(p->hikid);
     if (!p->key)
         free(p->eqkid);
 #ifndef MEMPOOL
     free(p);
 #endif
-}
-
-void tst_free_all(tst_node *p)
-{
-    __tst_free_all(p);
-    pool_free_all(&tst_node_pool);
 }
 
 /** free the ternary search tree rooted at p, data storage external. */
@@ -455,8 +449,6 @@ void tst_free(tst_node *p)
         tst_free(p->eqkid);
     tst_free(p->hikid);
     free(p);
-#else
-    pool_free_all(&tst_node_pool);
 #endif
 }
 

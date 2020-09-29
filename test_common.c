@@ -321,6 +321,7 @@ int main(int argc, char **argv)
 
 quit:
     free(pool);
+    pool_free_all(&tst_node_pool);
     /* for REF mechanism */
     if (CPYmask)
         tst_free(root);
