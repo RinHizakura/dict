@@ -11,23 +11,20 @@
 
 #define TableSize 5000000 /* size of bloom filter */
 #define HashNumber 2      /* number of hash functions */
+#define BENCH_TEST_FILE "bench_ref.txt"
+#define IN_FILE "cities.txt"
 
 typedef enum mode Mode;
 enum mode {
     CMD_MODE = 0,
     BENCH_MODE = 1,
-    PERF_MODE = 2,
-    FILE_MODE = 3,
+    FILE_MODE = 2,
 };
 
 /** constants insert, delete, max word(s) & stack nodes */
 enum { INS, DEL, WRDMAX = 256, STKMAX = 512, LMAX = 1024 };
 
 int REF = INS;
-
-
-#define BENCH_TEST_FILE "bench_ref.txt"
-
 long poolsize = 2000000 * WRDMAX;
 
 /* simple trim '\n' from end of buffer filled by fgets */
@@ -38,70 +35,15 @@ static void rmcrlf(char *s)
         s[--len] = 0;
 }
 
-#define IN_FILE "cities.txt"
-
-int perf(tst_node *root, bloom_t bloom)
-{
-    tst_node *res = NULL;
-    double t1, t2;
-    char buf[WORDMAX];
-    char word[WRDMAX] = "";
-    srand(1);
-    for (int round = 0; round < 10; round++) {
-        int right = 0, bloom_right = 0, wrong = 0;
-        double time = 0;
-
-        FILE *fp = fopen("cities.txt", "r");
-        while (fgets(buf, WORDMAX, fp)) {
-            char str[WORDMAX];
-            for (int i = 0, j = 0; buf[i]; i++) {
-                str[i] = (buf[i + j] == ',' || buf[i + j] == '\n') ? '\0'
-                                                                   : buf[i + j];
-                j += (buf[i + j] == ',');
-            }
-
-            char *s = str;
-            while (*s) {
-                strcpy(word, s);
-                rmcrlf(word);
-
-                t1 = tvgetf();
-                if (bloom_test(bloom, word)) {
-                    res = tst_search(root, word);
-                    if (res)
-                        right++;
-                    else
-                        wrong++;
-                } else {
-                    bloom_right++;
-                }
-                t2 = tvgetf();
-
-                time += (t2 - t1);
-                int len = strlen(s);
-                s += len + 1;
-            }
-        }
-        fclose(fp);
-
-        printf("%d, %.6f, %.3f, %.3f\n", round, time,
-               (float) (bloom_right + right) /
-                   (float) (right + wrong + bloom_right),
-               (float) bloom_right / (float) (right + wrong + bloom_right));
-    }
-    return 0;
-}
-
-#define BUFSIZE 256
 int main(int argc, char **argv)
 {
     char word[WRDMAX] = "";
+    char buf[WORDMAX];
     char *sgl[LMAX] = {NULL};
     tst_node *root = NULL, *res = NULL;
     int idx = 0, sidx = 0;
     double t1, t2;
     int CPYmask = -1;
-    char buf[WORDMAX];
 
     if (argc < 2) {
         printf("too less argument\n");
@@ -111,14 +53,12 @@ int main(int argc, char **argv)
     int option_index = 0;
     struct option opts[] = {
         {"bench", 0, NULL, 'b'},
-        {"perf", 0, NULL, 'p'},
         {"file", 1, NULL, 'f'},
     };
 
     Mode mode = CMD_MODE;
     int c;
-    char lbuf[BUFSIZE];
-    char *logfile_name = NULL;
+    char logfile_name[WRDMAX];
     while ((c = getopt_long(argc, argv, "bpf:", opts, &option_index)) != -1) {
         switch (c) {
         case 'b':
@@ -129,20 +69,11 @@ int main(int argc, char **argv)
                 return -1;
             }
             break;
-        case 'p':
-            if (!mode)
-                mode = PERF_MODE;
-            else {
-                fprintf(stderr, "Too many option.\n");
-                return -1;
-            }
-            break;
         case 'f':
             if (!mode) {
                 mode = FILE_MODE;
-                strncpy(lbuf, optarg, BUFSIZE);
-                buf[BUFSIZE - 1] = '\0';
-                logfile_name = lbuf;
+                strncpy(logfile_name, optarg, WRDMAX);
+                logfile_name[WRDMAX - 1] = '\0';
             } else {
                 fprintf(stderr, "Too many option.\n");
                 return -1;
@@ -178,8 +109,8 @@ int main(int argc, char **argv)
         fprintf(stderr, "error: file open failed '%s'.\n", argv[1]);
         return 1;
     }
-    t1 = tvgetf();
 
+    t1 = tvgetf();
     tst_init();
     bloom_t bloom = bloom_create(TableSize);
     char *Top = word;
@@ -214,6 +145,7 @@ int main(int argc, char **argv)
         memset(Top, '\0', WORDMAX);
     }
     t2 = tvgetf();
+
     fclose(fp);
     printf("ternary_tree, loaded %d words in %.6f sec\n", idx, t2 - t1);
 
@@ -226,8 +158,6 @@ int main(int argc, char **argv)
         tst_free(root);
         free(pool);
         return stat;
-    case PERF_MODE:
-        return perf(root, bloom);
     case FILE_MODE:
         logfile = fopen(logfile_name, "r");
         if (!logfile) {
@@ -238,14 +168,6 @@ int main(int argc, char **argv)
     default:
         break;
     }
-
-    FILE *output;
-    output = fopen("ref.txt", "a");
-    if (output != NULL) {
-        fprintf(output, "%.6f\n", t2 - t1);
-        fclose(output);
-    } else
-        printf("open file error\n");
 
     for (;;) {
         if (mode == CMD_MODE)
