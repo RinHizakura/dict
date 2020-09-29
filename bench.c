@@ -5,8 +5,8 @@
 #include "bench.h"
 
 #define DICT_FILE "cities.txt"
-#define WORDMAX 256
 #define PREFIX_LEN 3
+#define WORDMAX 256
 
 double tvgetf()
 {
