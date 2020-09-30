@@ -17,7 +17,6 @@ typedef struct tst_node {
     struct tst_node *hikid; /* ternary high child pointer */
 } tst_node;
 
-/** struct to use for static stack to remove nodes. */
 
 /** tst_ins_del() ins/del copy or reference of 's' from ternary search tree.
  *  insert all nodes required for 's' in tree at eqkid node of leaf. if 'del'

@@ -110,8 +110,10 @@ static void *tst_del_word(tst_node **root,
                 if (victim->lokid && victim->hikid) {
                     /* same checks and rotations as above */
                     if (!victim->lokid->hikid) {
+                        victim->lokid->hikid = victim->hikid;
                         del_node(parent, victim, root, victim->lokid);
                     } else if (!victim->hikid->lokid) {
+                        victim->hikid->lokid = victim->lokid;
                         del_node(parent, victim, root, victim->hikid);
                     } else
                         return NULL;
