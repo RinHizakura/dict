@@ -4,16 +4,6 @@
 #define WRDMAX 128
 #define STKMAX (WRDMAX * 2)
 
-/** ternary search tree node. */
-typedef struct tst_node {
-    char key;               /* char key for node (null for node with string) */
-    unsigned refcnt;        /* refcnt tracks occurrence of word (for delete) */
-    struct tst_node *lokid; /* ternary low child pointer */
-    struct tst_node *eqkid; /* ternary equal child pointer */
-    struct tst_node *hikid; /* ternary high child pointer */
-} tst_node;
-
-/** struct to use for static stack to remove nodes. */
 typedef struct tst_stack {
     void *data[STKMAX];
     size_t idx;
@@ -40,15 +30,6 @@ static void *tst_stack_pop(tst_stack *s)
     s->data[s->idx] = NULL;
 
     return node;
-}
-
-static inline void free_node(tst_node *n)
-{
-#ifndef MEMPOOL
-    free(n);
-#else
-    pool_free(&tst_node_pool, n);
-#endif
 }
 
 /** delete current data-node and parent, update 'node' to new parent.
@@ -100,39 +81,17 @@ static void *tst_del_word(tst_node **root,
                  * rotate victim->lokid to place of victim.
                  */
                 victim->lokid->hikid = victim->hikid;
-                if (!parent)
-                    *root = victim->lokid;
-                else if (victim == parent->lokid)
-                    parent->lokid = victim->lokid;
-                else if (victim == parent->hikid)
-                    parent->hikid = victim->lokid;
-                else
-                    parent->eqkid = victim->lokid;
-                free_node(victim);
-                victim = NULL;
+                del_node(parent, victim, root, victim->lokid);
             } else if (!victim->hikid->lokid) { /* check for lokid in hi tree */
                 /* opposite rotation */
                 victim->hikid->lokid = victim->lokid;
-                if (!parent)
-                    *root = victim->hikid;
-                else if (victim == parent->lokid)
-                    parent->lokid = victim->hikid;
-                else if (victim == parent->hikid)
-                    parent->hikid = victim->hikid;
-                else
-                    parent->eqkid = victim->hikid;
-                free_node(victim);
-                victim = NULL;
+                del_node(parent, victim, root, victim->hikid);
             } else /* can't rotate, return, leaving victim->eqkid NULL */
                 return NULL;
         } else if (victim->lokid) { /* only lokid, replace victim with lokid */
-            parent->eqkid = victim->lokid;
-            free_node(victim);
-            victim = NULL;
+            del_node(parent, victim, root, victim->lokid);
         } else if (victim->hikid) { /* only hikid, replace victim with hikid */
-            parent->eqkid = victim->hikid;
-            free_node(victim);
-            victim = NULL;
+            del_node(parent, victim, root, victim->hikid);
         } else { /* victim - no children, but parent has other children */
             if (victim == parent->lokid) { /* if parent->lokid - trim */
                 parent->lokid = NULL;
@@ -151,60 +110,19 @@ static void *tst_del_word(tst_node **root,
                 if (victim->lokid && victim->hikid) {
                     /* same checks and rotations as above */
                     if (!victim->lokid->hikid) {
-                        victim->lokid->hikid = victim->hikid;
-                        if (!parent)
-                            *root = victim->lokid;
-                        else if (victim == parent->lokid)
-                            parent->lokid = victim->lokid;
-                        else if (victim == parent->hikid)
-                            parent->hikid = victim->lokid;
-                        else
-                            parent->eqkid = victim->lokid;
-                        free_node(victim);
-                        victim = NULL;
+                        del_node(parent, victim, root, victim->lokid);
                     } else if (!victim->hikid->lokid) {
-                        victim->hikid->lokid = victim->lokid;
-                        if (!parent)
-                            *root = victim->hikid;
-                        else if (victim == parent->lokid)
-                            parent->lokid = victim->hikid;
-                        else if (victim == parent->hikid)
-                            parent->hikid = victim->hikid;
-                        else
-                            parent->eqkid = victim->hikid;
-                        free_node(victim);
-                        victim = NULL;
+                        del_node(parent, victim, root, victim->hikid);
                     } else
                         return NULL;
                 }
                 /* if only lokid, rewire to parent */
                 else if (victim->lokid) {
-                    if (parent) { /* if parent exists, rewire */
-                        if (victim == parent->lokid)
-                            parent->lokid = victim->lokid;
-                        else if (victim == parent->hikid)
-                            parent->hikid = victim->lokid;
-                        else
-                            parent->eqkid = victim->lokid;
-                    } else /* we are new root node, update root */
-                        *root = victim->lokid; /* make last node root */
-                    free_node(victim);
-                    victim = NULL;
+                    del_node(parent, victim, root, victim->lokid);
                 }
                 /* if only hikid, rewire to parent */
                 else if (victim->hikid) {
-                    if (parent) { /* if parent exists, rewire */
-                        if (victim == parent->lokid)
-                            parent->lokid = victim->hikid;
-                        else if (victim == parent->hikid)
-                            parent->hikid = victim->hikid;
-                        else
-                            parent->eqkid = victim->hikid;
-                    } else /* we are new root node, update root */
-                        *root = victim->hikid; /* make last node root */
-
-                    free_node(victim);
-                    victim = NULL;
+                    del_node(parent, victim, root, victim->hikid);
                 }
             }
         }

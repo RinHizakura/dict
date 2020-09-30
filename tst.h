@@ -8,6 +8,16 @@
 
 /* forward declaration of ternary search tree */
 typedef struct tst_node tst_node;
+/** ternary search tree node. */
+typedef struct tst_node {
+    char key;               /* char key for node (null for node with string) */
+    unsigned refcnt;        /* refcnt tracks occurrence of word (for delete) */
+    struct tst_node *lokid; /* ternary low child pointer */
+    struct tst_node *eqkid; /* ternary equal child pointer */
+    struct tst_node *hikid; /* ternary high child pointer */
+} tst_node;
+
+/** struct to use for static stack to remove nodes. */
 
 /** tst_ins_del() ins/del copy or reference of 's' from ternary search tree.
  *  insert all nodes required for 's' in tree at eqkid node of leaf. if 'del'
@@ -73,4 +83,29 @@ char *tst_get_string(const tst_node *node);
 void tst_init();
 
 pool_t tst_node_pool;
+static inline void free_node(tst_node *n)
+{
+    printf("key: %c \n", n->key);
+#ifndef MEMPOOL
+    free(n);
+#else
+    pool_free(&tst_node_pool, n);
+#endif
+}
+
+
+#define del_node(parent, victim, root, kid) \
+    do {                                    \
+        if (!parent)                        \
+            *root = kid;                    \
+        else if (victim == parent->lokid)   \
+            parent->lokid = kid;            \
+        else if (victim == parent->hikid)   \
+            parent->hikid = kid;            \
+        else                                \
+            parent->eqkid = kid;            \
+        free_node(victim);                  \
+        victim = NULL;                      \
+    } while (0)
+
 #endif

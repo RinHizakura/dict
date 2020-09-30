@@ -5,33 +5,40 @@
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.9~svn20110310	//
 BENCH_H	bench.h	2;"	d
-BENCH_TEST_FILE	test_common.c	20;"	d	file:
+BENCH_MODE	test_common.c	/^    BENCH_MODE = 1,$/;"	e	enum:mode	file:
+BENCH_TEST_FILE	test_common.c	14;"	d	file:
 CFLAGS	Makefile	/^CFLAGS = -O0 -Wall -Werror -g$/;"	m
-DEL	test_common.c	/^enum { INS, DEL, WRDMAX = 256, STKMAX = 512, LMAX = 1024 };$/;"	e	enum:__anon1	file:
+CMD_MODE	test_common.c	/^    CMD_MODE = 3,$/;"	e	enum:mode	file:
+DEL	test_common.c	/^enum { INS, DEL, WRDMAX = 256, STKMAX = 512, LMAX = 1024 };$/;"	e	enum:__anon2	file:
 DICT_FILE	bench.c	7;"	d	file:
+FILE_MODE	test_common.c	/^    FILE_MODE = 2,$/;"	e	enum:mode	file:
 GIT_HOOKS	Makefile	/^GIT_HOOKS := .git\/hooks\/applied$/;"	m
-HashNumber	test_common.c	12;"	d	file:
-INS	test_common.c	/^enum { INS, DEL, WRDMAX = 256, STKMAX = 512, LMAX = 1024 };$/;"	e	enum:__anon1	file:
-IN_FILE	test_common.c	32;"	d	file:
-LMAX	test_common.c	/^enum { INS, DEL, WRDMAX = 256, STKMAX = 512, LMAX = 1024 };$/;"	e	enum:__anon1	file:
+HashNumber	test_common.c	13;"	d	file:
+INPUT_MODE	test_common.c	/^    INPUT_MODE = 0,$/;"	e	enum:mode	file:
+INS	test_common.c	/^enum { INS, DEL, WRDMAX = 256, STKMAX = 512, LMAX = 1024 };$/;"	e	enum:__anon2	file:
+IN_FILE	test_common.c	15;"	d	file:
+LMAX	test_common.c	/^enum { INS, DEL, WRDMAX = 256, STKMAX = 512, LMAX = 1024 };$/;"	e	enum:__anon2	file:
+Mode	test_common.c	/^typedef enum mode Mode;$/;"	t	typeref:enum:mode	file:
 OBJS	Makefile	/^OBJS := \\$/;"	m
 OBJS_LIB	Makefile	/^OBJS_LIB = \\$/;"	m
-PREFIX_LEN	bench.c	9;"	d	file:
+PREFIX_LEN	bench.c	8;"	d	file:
 PREFIX_SEARCH_H	tst.h	2;"	d
 Q	Makefile	/^    Q := @$/;"	m
 Q	Makefile	/^    Q :=$/;"	m
 REF	test_common.c	/^int REF = INS;$/;"	v
-STKMAX	test_common.c	/^enum { INS, DEL, WRDMAX = 256, STKMAX = 512, LMAX = 1024 };$/;"	e	enum:__anon1	file:
+STKMAX	test_common.c	/^enum { INS, DEL, WRDMAX = 256, STKMAX = 512, LMAX = 1024 };$/;"	e	enum:__anon2	file:
 STKMAX	tst.c	5;"	d	file:
 TESTS	Makefile	/^TESTS = test_common$/;"	m
 TEST_DATA	Makefile	/^TEST_DATA = s Tai$/;"	m
-TableSize	test_common.c	11;"	d	file:
+TableSize	test_common.c	12;"	d	file:
 VECHO	Makefile	/^    VECHO = @printf$/;"	m
 VECHO	Makefile	/^    VECHO = @true$/;"	m
-WORDMAX	bench.c	8;"	d	file:
-WRDMAX	test_common.c	/^enum { INS, DEL, WRDMAX = 256, STKMAX = 512, LMAX = 1024 };$/;"	e	enum:__anon1	file:
+WORDMAX	bench.c	9;"	d	file:
+WRDMAX	test_common.c	/^enum { INS, DEL, WRDMAX = 256, STKMAX = 512, LMAX = 1024 };$/;"	e	enum:__anon2	file:
 WRDMAX	tst.c	4;"	d	file:
 _BLOOM_H	bloom.h	2;"	d
+_POOL_H	pool.h	2;"	d
+act	scripts/randstrGenerator.py	/^     act = random.choice(opt)$/;"	v
 add_warning	scripts/commit-msg.hook	/^add_warning() {$/;"	f
 bench_test	bench.c	/^int bench_test(const tst_node *root, char *out_file, const int max)$/;"	f
 bits	bloom.c	/^    void *bits;$/;"	m	struct:bloom_filter	file:
@@ -43,39 +50,73 @@ bloom_free	bloom.c	/^void bloom_free(bloom_t filter)$/;"	f
 bloom_hash	bloom.c	/^struct bloom_hash {$/;"	s	file:
 bloom_t	bloom.h	/^typedef struct bloom_filter *bloom_t;$/;"	t	typeref:struct:bloom_filter
 bloom_test	bloom.c	/^bool bloom_test(bloom_t filter, const void *item)$/;"	f
+chunk_per_page	pool.h	/^    unsigned long chunk_per_page;  \/\/ number of element can put in a page$/;"	m	struct:__anon1
+ct	scripts/randstrGenerator.py	/^ct = pd.read_table("cities.txt",sep=",",usecols=[0,1])$/;"	v
 data	tst.c	/^    void *data[STKMAX];$/;"	m	struct:tst_stack	file:
 deps	Makefile	/^deps := $(OBJS:%.o=.%.o.d)$/;"	m
 display_warnings	scripts/commit-msg.hook	/^display_warnings() {$/;"	f
 djb2	bloom.c	/^static unsigned int djb2(const void *_str)$/;"	f	file:
+element_size	pool.h	/^    unsigned long element_size;    \/\/ size of each element$/;"	m	struct:__anon1
+end	scripts/perf.py	/^        end = time.time()$/;"	v
 eqkid	tst.c	/^    struct tst_node *eqkid; \/* ternary equal child pointer *\/$/;"	m	struct:tst_node	typeref:struct:tst_node::tst_node	file:
+f	scripts/randstrGenerator.py	/^f = open('input_rand.txt', 'w')$/;"	v
+fp	scripts/perf.py	/^    fp = open('input.txt', "r")$/;"	v
+free	pool.h	/^    free_list *free;               \/\/ a list to collect freed element$/;"	m	struct:__anon1
+free_list	pool.h	/^typedef struct free_list {$/;"	s
+free_list	pool.h	/^} free_list;$/;"	t	typeref:struct:free_list
+free_node	tst.c	/^static inline void free_node(tst_node *n)$/;"	f	file:
 func	bloom.c	/^    hash_function func;$/;"	m	struct:bloom_hash	file:
 func	bloom.c	/^    struct bloom_hash *func;$/;"	m	struct:bloom_filter	typeref:struct:bloom_filter::bloom_hash	file:
+get_random_string	scripts/randstrGenerator.py	/^def get_random_string(length):$/;"	f
 hash_function	bloom.h	/^typedef unsigned int (*hash_function)(const void *data);$/;"	t
 hikid	tst.c	/^    struct tst_node *hikid; \/* ternary high child pointer *\/$/;"	m	struct:tst_node	typeref:struct:tst_node::tst_node	file:
 idx	tst.c	/^    size_t idx;$/;"	m	struct:tst_stack	file:
 jenkins	bloom.c	/^static unsigned int jenkins(const void *_str)$/;"	f	file:
 key	tst.c	/^    char key;               \/* char key for node (null for node with string) *\/$/;"	m	struct:tst_node	file:
+l	scripts/randstrGenerator.py	/^         l = list(s)$/;"	v
+line	scripts/perf.py	/^        line = fp.readline()$/;"	v
+line	scripts/perf.py	/^    line = fp.readline()$/;"	v
 lokid	tst.c	/^    struct tst_node *lokid; \/* ternary low child pointer *\/$/;"	m	struct:tst_node	typeref:struct:tst_node::tst_node	file:
 main	test_common.c	/^int main(int argc, char **argv)$/;"	f
+max	pool.c	6;"	d	file:
+mode	test_common.c	/^enum mode {$/;"	g	file:
 next	bloom.c	/^    struct bloom_hash *next;$/;"	m	struct:bloom_hash	typeref:struct:bloom_hash::bloom_hash	file:
+next	pool.h	/^    struct free_list *next;$/;"	m	struct:free_list	typeref:struct:free_list::free_list
+opt	scripts/randstrGenerator.py	/^opt = ['a', 'd']$/;"	v
+page	pool.h	/^    unsigned int page;             \/\/ current used page of memory pool$/;"	m	struct:__anon1
+page_total	pool.h	/^    unsigned int page_total;       \/\/ total pages avalible in memory pool$/;"	m	struct:__anon1
+pages_addr	pool.h	/^    void **pages_addr;$/;"	m	struct:__anon1
+pool_alloc	pool.c	/^void *pool_alloc(pool_t *p)$/;"	f
+pool_free	pool.c	/^void pool_free(pool_t *p, void *ptr)$/;"	f
+pool_free_all	pool.c	/^void pool_free_all(pool_t *p)$/;"	f
+pool_init	pool.c	/^void pool_init(pool_t *p, unsigned long element_size, unsigned long page_size)$/;"	f
+pool_t	pool.h	/^} pool_t;$/;"	t	typeref:struct:__anon1
 poolsize	test_common.c	/^long poolsize = 2000000 * WRDMAX;$/;"	v
 prompt_help	scripts/commit-msg.hook	/^prompt_help() {$/;"	f
 read_commit_message	scripts/commit-msg.hook	/^read_commit_message() {$/;"	f
 refcnt	tst.c	/^    unsigned refcnt;        \/* refcnt tracks occurrence of word (for delete) *\/$/;"	m	struct:tst_node	file:
 rmcrlf	test_common.c	/^static void rmcrlf(char *s)$/;"	f	file:
+s	scripts/perf.py	/^        s = line.split(',')[0]$/;"	v
+s	scripts/randstrGenerator.py	/^         s = ''.join(l)$/;"	v
+s	scripts/randstrGenerator.py	/^         s = ct.iloc[random.randint(0, x-1), random.randint(0,y-1)]$/;"	v
+s	scripts/randstrGenerator.py	/^         s = get_random_string(random.randint(4, 32))$/;"	v
 set_colors	scripts/commit-msg.hook	/^set_colors() {$/;"	f
 set_editor	scripts/commit-msg.hook	/^set_editor() {$/;"	f
 size	bloom.c	/^    size_t size;$/;"	m	struct:bloom_filter	file:
+start	scripts/perf.py	/^        start = time.time()$/;"	v
+t	scripts/perf.py	/^    t = 0$/;"	v
 tst_del_word	tst.c	/^static void *tst_del_word(tst_node **root,$/;"	f	file:
 tst_free	tst.c	/^void tst_free(tst_node *p)$/;"	f
 tst_free_all	tst.c	/^void tst_free_all(tst_node *p)$/;"	f
 tst_get_key	tst.c	/^char tst_get_key(const tst_node *node)$/;"	f
 tst_get_refcnt	tst.c	/^unsigned tst_get_refcnt(const tst_node *node)$/;"	f
 tst_get_string	tst.c	/^char *tst_get_string(const tst_node *node)$/;"	f
+tst_init	tst.c	/^void tst_init()$/;"	f
 tst_ins_del	tst.c	/^void *tst_ins_del(tst_node **root, const char *s, const int del, const int cpy)$/;"	f
 tst_node	tst.c	/^typedef struct tst_node {$/;"	s	file:
 tst_node	tst.c	/^} tst_node;$/;"	t	typeref:struct:tst_node	file:
 tst_node	tst.h	/^typedef struct tst_node tst_node;$/;"	t	typeref:struct:tst_node
+tst_node_pool	tst.h	/^pool_t tst_node_pool;$/;"	v
 tst_search	tst.c	/^void *tst_search(const tst_node *p, const char *s)$/;"	f
 tst_search_prefix	tst.c	/^void *tst_search_prefix(const tst_node *root,$/;"	f
 tst_stack	tst.c	/^typedef struct tst_stack {$/;"	s	file:
@@ -85,4 +126,5 @@ tst_stack_push	tst.c	/^static void *tst_stack_push(tst_stack *s, void *node)$/;"
 tst_suggest	tst.c	/^void tst_suggest(const tst_node *p,$/;"	f
 tst_traverse_fn	tst.c	/^void tst_traverse_fn(const tst_node *p,$/;"	f
 tvgetf	bench.c	/^double tvgetf()$/;"	f
+used	pool.h	/^    unsigned int used;             \/\/ index of element in page$/;"	m	struct:__anon1
 validate_commit_message	scripts/commit-msg.hook	/^validate_commit_message() {$/;"	f
