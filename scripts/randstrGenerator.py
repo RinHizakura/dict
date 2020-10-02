@@ -12,7 +12,7 @@ x, y = ct.shape
 
 opt = ['a', 'd']
 f = open('input_rand.txt', 'w')
-for i in range(0,1000):
+for i in range(0,30000):
      act = random.choice(opt)
      f.write(act)
      if(act == 'd'):

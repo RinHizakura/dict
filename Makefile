@@ -69,26 +69,23 @@ bench: $(TESTS)
 
 plot: $(TESTS)
 	echo 3 | sudo tee /proc/sys/vm/drop_caches;
-	sudo perf stat --repeat 100 \
-                -e cache-misses,cache-references,instructions,cycles \
-                ./test_common --bench CPY $(TEST_DATA) \
-		| grep 'ternary_tree, loaded 206849 words'\
-		| grep -Eo '[0-9]+\.[0-9]+' > cpy_data.csv
-	sudo perf stat --repeat 100 \
-                -e cache-misses,cache-references,instructions,cycles \
-				./test_common --bench REF $(TEST_DATA)\
-		| grep 'ternary_tree, loaded 206849 words'\
-		| grep -Eo '[0-9]+\.[0-9]+' > ref_data.csv
+	@make clean > /dev/null
+	@make > /dev/null
+	./test_common REF > out.txt
+	@make clean > /dev/null
+	@make MEMPOOL=1 > /dev/null
+	./test_common REF > mem.txt
 
 perf: $(TESTS)
 	@make clean > /dev/null
 	@make > /dev/null
-	@sudo perf stat -e cache-misses:u,cache-references:u\
+	@sudo perf stat --repeat 100 -e cache-misses:u,cache-references:u\
         	./test_common REF --file input_rand.txt > /dev/null 
 	@make clean > /dev/null
 	@make MEMPOOL=1	> /dev/null
-	@sudo perf stat -e cache-misses:u,cache-references:u\
+	@sudo perf stat --repeat 100 -e cache-misses:u,cache-references:u\
         	./test_common REF --file input_rand.txt > /dev/null 
+
 record:
 	sudo perf record -e cache-misses:u,cache-references:u\
         	./test_common REF --file input_rand.txt > /dev/null 

@@ -4,6 +4,28 @@
 #define WRDMAX 128
 #define STKMAX (WRDMAX * 2)
 
+/* This macro is used to replace some repeating pattern for rotating and
+ * deleting the node on tenary search tree. It will append kid of victim on
+ * suitable position, then free victim itself. Note that 'kid' should be
+ * victim->lokid or victim->hikid
+ */
+#define del_node(parent, victim, root, kid)   \
+    do {                                      \
+        if (!parent) {                        \
+            *root = kid;                      \
+        } else {                              \
+            if (victim == parent->lokid)      \
+                parent->lokid = kid;          \
+            else if (victim == parent->hikid) \
+                parent->hikid = kid;          \
+            else                              \
+                parent->eqkid = kid;          \
+        }                                     \
+        free_node(victim);                    \
+        victim = NULL;                        \
+    } while (0)
+
+
 typedef struct tst_stack {
     void *data[STKMAX];
     size_t idx;

@@ -84,27 +84,12 @@ void tst_init();
 pool_t tst_node_pool;
 static inline void free_node(tst_node *n)
 {
-    printf("key: %c \n", n->key);
 #ifndef MEMPOOL
+
     free(n);
 #else
     pool_free(&tst_node_pool, n);
 #endif
 }
-
-
-#define del_node(parent, victim, root, kid) \
-    do {                                    \
-        if (!parent)                        \
-            *root = kid;                    \
-        else if (victim == parent->lokid)   \
-            parent->lokid = kid;            \
-        else if (victim == parent->hikid)   \
-            parent->hikid = kid;            \
-        else                                \
-            parent->eqkid = kid;            \
-        free_node(victim);                  \
-        victim = NULL;                      \
-    } while (0)
 
 #endif

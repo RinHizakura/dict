@@ -29,7 +29,6 @@ int bench_test(const tst_node *root, char *out_file, const int max)
     FILE *fp = fopen(out_file, "w");
     FILE *dict = fopen(DICT_FILE, "r");
     int idx = 0, sidx = 0;
-    double t1, t2;
 
     if (!fp || !dict) {
         if (fp) {
@@ -44,14 +43,18 @@ int bench_test(const tst_node *root, char *out_file, const int max)
     }
 
     sgl = (char **) malloc(sizeof(char *) * max);
+    struct timespec tt1, tt2;
     while (fscanf(dict, "%s", word) != EOF) {
         if (strlen(word) < sizeof(prefix) - 1)
             continue;
         strncpy(prefix, word, sizeof(prefix) - 1);
-        t1 = tvgetf();
+        clock_gettime(CLOCK_MONOTONIC, &tt1);
         tst_search_prefix(root, prefix, sgl, &sidx, max);
-        t2 = tvgetf();
-        fprintf(fp, "%d %f msec\n", idx, (t2 - t1) * 1000);
+        clock_gettime(CLOCK_MONOTONIC, &tt2);
+
+        long long time = (long long) (tt2.tv_sec * 1e9 + tt2.tv_nsec) -
+                         (long long) (tt1.tv_sec * 1e9 + tt1.tv_nsec);
+        fprintf(fp, "%d, %lld\n", idx, time);
         idx++;
     }
 

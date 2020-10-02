@@ -161,14 +161,20 @@ int main(int argc, char **argv)
     fclose(fp);
     printf("ternary_tree, loaded %d words in %.6f sec\n", idx, t2 - t1);
 
-
     FILE *logfile = NULL;
     int stat = 0;
     switch (mode) {
     case BENCH_MODE:
         stat = bench_test(root, BENCH_TEST_FILE, LMAX);
-        tst_free(root);
+        // after test, free all allocated memory
         free(pool);
+        if (CPYmask)
+            tst_free(root);
+        else
+            tst_free_all(root);
+
+        pool_free_all(&tst_node_pool);
+        bloom_free(bloom);
         return stat;
     case FILE_MODE:
         logfile = fopen(paramstr, "r");
@@ -320,8 +326,8 @@ int main(int argc, char **argv)
     }
 
 quit:
+
     free(pool);
-    /* for REF mechanism */
     if (CPYmask)
         tst_free(root);
     else
@@ -329,5 +335,6 @@ quit:
 
     pool_free_all(&tst_node_pool);
     bloom_free(bloom);
+
     return 0;
 }
