@@ -71,9 +71,11 @@ static void *tst_del_word(tst_node **root,
     tst_node *victim = node;               /* begin deletion w/victim */
     tst_node *parent = tst_stack_pop(stk); /* parent to victim */
 
-    if (!victim->refcnt) {            /* if last occurrence */
-        if (!victim->key && freeword) /* check key is nul   */
-            free(victim->eqkid);      /* free string (data) */
+    if (!victim->refcnt) {              /* if last occurrence */
+        if (!victim->key && freeword) { /* check key is nul   */
+            free(victim->eqkid);        /* free string (data) */
+            victim->eqkid = NULL;
+        }
 
         /* remove unique suffix chain - parent & victim nodes
          * have no children. simple remove until the first parent
@@ -374,8 +376,9 @@ void tst_free_all(tst_node *p)
     if (p->key)
         tst_free_all(p->eqkid);
     tst_free_all(p->hikid);
-    if (!p->key)
+    if (!p->key) {
         free(p->eqkid);
+    }
 #ifndef MEMPOOL
     free(p);
 #endif
