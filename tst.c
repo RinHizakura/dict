@@ -150,7 +150,7 @@ static void *tst_del_word(tst_node **root,
                 }
             }
         }
-    } else /* node->refcnt non-zero */
+    } else
         printf("  %s  (refcnt: %u) not removed.\n", (char *) node->eqkid,
                node->refcnt);
 
@@ -222,6 +222,7 @@ void *tst_ins_del(tst_node **root, const char *s, const int del, const int cpy)
             fprintf(stderr, "error: tst_insert(), memory exhausted.\n");
             return NULL;
         }
+        printf("addr: %lx\n", (unsigned long) *pcurr);
         memset(*pcurr, 0, sizeof(**pcurr));
 #endif
         curr = *pcurr;

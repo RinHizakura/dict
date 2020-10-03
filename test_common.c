@@ -325,8 +325,9 @@ int main(int argc, char **argv)
             break;
     }
 
-quit:
 
+quit:
+    fclose(logfile);
     free(pool);
     if (CPYmask)
         tst_free(root);
