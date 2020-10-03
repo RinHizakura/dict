@@ -327,7 +327,8 @@ int main(int argc, char **argv)
 
 
 quit:
-    fclose(logfile);
+    if (mode == FILE_MODE)
+        fclose(logfile);
     free(pool);
     if (CPYmask)
         tst_free(root);
