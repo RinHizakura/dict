@@ -39,7 +39,7 @@ static void rmcrlf(char *s)
 int main(int argc, char **argv)
 {
     char word[WRDMAX] = "";
-    char buf[WORDMAX];
+    char buf[WORDMAX] = "";
     char *sgl[LMAX] = {NULL};
     tst_node *root = NULL, *res = NULL;
     int idx = 0, sidx = 0;
@@ -126,7 +126,7 @@ int main(int argc, char **argv)
     tst_init();
     bloom_t bloom = bloom_create(TableSize);
     char *Top = word;
-    char *pool;
+    char *pool = NULL;
 
     if (CPYmask) {
         /* memory pool */

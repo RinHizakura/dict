@@ -74,7 +74,6 @@ static void *tst_del_word(tst_node **root,
     if (!victim->refcnt) {              /* if last occurrence */
         if (!victim->key && freeword) { /* check key is nul   */
             free(victim->eqkid);        /* free string (data) */
-            victim->eqkid = NULL;
         }
 
         /* remove unique suffix chain - parent & victim nodes
@@ -376,7 +375,7 @@ void tst_free_all(tst_node *p)
     if (p->key)
         tst_free_all(p->eqkid);
     tst_free_all(p->hikid);
-    if (!p->key) {
+    if (!p->key && p->refcnt > 0) {
         free(p->eqkid);
     }
 #ifndef MEMPOOL
