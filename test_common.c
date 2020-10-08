@@ -1,9 +1,9 @@
+#include <getopt.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
 #include "bench.c"
 #include "bloom.h"
 #include "tst.h"
@@ -16,6 +16,13 @@ enum { INS, DEL, WRDMAX = 256, STKMAX = 512, LMAX = 1024 };
 
 int REF = INS;
 
+typedef enum mode Mode;
+enum mode {
+    INPUT_MODE = 0,
+    BENCH_MODE = 1,
+    FILE_MODE = 2,
+    CMD_MODE = 3,
+};
 
 #define BENCH_TEST_FILE "bench_ref.txt"
 
@@ -34,46 +41,100 @@ static void rmcrlf(char *s)
 int main(int argc, char **argv)
 {
     char word[WRDMAX] = "";
+    char buf[WORDMAX] = "";
     char *sgl[LMAX] = {NULL};
     tst_node *root = NULL, *res = NULL;
     int idx = 0, sidx = 0;
     double t1, t2;
     int CPYmask = -1;
+
     if (argc < 2) {
         printf("too less argument\n");
-        return 1;
+        return -1;
     }
 
-    if (!strcmp(argv[1], "CPY") || (argc > 2 && !strcmp(argv[2], "CPY"))) {
-        CPYmask = 0;
-        REF = DEL;
-        printf("CPY mechanism\n");
-    } else
-        printf("REF mechanism\n");
+    int option_index = 0;
+    struct option opts[] = {
+        {"bench", 0, NULL, 'b'},
+        {"file", 1, NULL, 'f'},
+        {"cmd", 1, NULL, 'c'},
+    };
 
-    char *Top = word;
-    char *pool = NULL;
-
-    if (CPYmask) {  // Only allacte pool in REF mechanism
-        pool = malloc(poolsize);
-        if (!pool) {
-            fprintf(stderr, "Failed to allocate memory pool.\n");
-            return 1;
+    Mode mode = INPUT_MODE;
+    int c;
+    char paramstr[WRDMAX];
+    while ((c = getopt_long(argc, argv, "bpf:c:", opts, &option_index)) != -1) {
+        switch (c) {
+        case 'b':
+            if (!mode)
+                mode = BENCH_MODE;
+            else {
+                fprintf(stderr, "Too many option.\n");
+                return -1;
+            }
+            break;
+        case 'f':
+            if (!mode) {
+                mode = FILE_MODE;
+                strncpy(paramstr, optarg, WRDMAX);
+                paramstr[WRDMAX - 1] = '\0';
+            } else {
+                fprintf(stderr, "Too many option.\n");
+                return -1;
+            }
+            break;
+        case 'c':
+            if (!mode) {
+                mode = CMD_MODE;
+                strncpy(paramstr, optarg, WRDMAX);
+                paramstr[WRDMAX - 1] = '\0';
+            } else {
+                fprintf(stderr, "Too many option.\n");
+                return -1;
+            }
+            break;
+        default:
+            printf("Unknown option\n");
+            break;
         }
-        Top = pool;
     }
+
+    int flag = 0;
+    for (int index = optind; index < argc; index++) {
+        if (!strcmp(argv[index], "CPY")) {
+            CPYmask = 0;
+            REF = DEL;
+            printf("CPY mechanism\n");
+            flag = 1;
+        } else if (!strcmp(argv[index], "REF")) {
+            printf("REF mechanism\n");
+            flag = 1;
+        }
+    }
+
+    if (flag == 0) {
+        printf("Must defined using CPY or REF\n");
+        return -1;
+    }
+
 
     FILE *fp = fopen(IN_FILE, "r");
-
     if (!fp) { /* prompt, open, validate file for reading */
         fprintf(stderr, "error: file open failed '%s'.\n", argv[1]);
         return 1;
     }
+
     t1 = tvgetf();
-
     bloom_t bloom = bloom_create(TableSize);
+    char *Top = word;
+    char *pool = NULL;
 
-    char buf[WORDMAX];
+    if (CPYmask) {
+        /* memory pool */
+        pool = (char *) malloc(poolsize * sizeof(char));
+        Top = pool;
+    }
+
     while (fgets(buf, WORDMAX, fp)) {
         int offset = 0;
         for (int i = 0, j = 0; buf[i + offset]; i++) {
@@ -97,44 +158,62 @@ int main(int argc, char **argv)
         memset(Top, '\0', WORDMAX);
     }
     t2 = tvgetf();
+
     fclose(fp);
     printf("ternary_tree, loaded %d words in %.6f sec\n", idx, t2 - t1);
 
-    if (argc == 3 && strcmp(argv[1], "--bench") == 0) {
-        int stat = bench_test(root, BENCH_TEST_FILE, LMAX);
-        tst_free(root);
+    FILE *logfile = NULL;
+    int stat = 0;
+    switch (mode) {
+    case BENCH_MODE:
+        stat = bench_test(root, BENCH_TEST_FILE, LMAX);
+        // after test, free all allocated memory
         free(pool);
+        if (CPYmask)
+            tst_free(root);
+        else
+            tst_free_all(root);
+
+        bloom_free(bloom);
         return stat;
+    case FILE_MODE:
+        logfile = fopen(paramstr, "r");
+        if (!logfile) {
+            fprintf(stderr, "error: file open failed '%s'.\n", paramstr);
+            return 1;
+        }
+        break;
+    default:
+        break;
     }
 
-    FILE *output;
-    output = fopen("ref.txt", "a");
-    if (output != NULL) {
-        fprintf(output, "%.6f\n", t2 - t1);
-        fclose(output);
-    } else
-        printf("open file error\n");
-
     for (;;) {
-        printf(
-            "\nCommands:\n"
-            " a  add word to the tree\n"
-            " f  find word in tree\n"
-            " s  search words matching prefix\n"
-            " d  delete word from the tree\n"
-            " q  quit, freeing all data\n\n"
-            "choice: ");
+        if (mode == INPUT_MODE)
+            printf(
+                "\nCommands:\n"
+                " a  add word to the tree\n"
+                " f  find word in tree\n"
+                " s  search words matching prefix\n"
+                " d  delete word from the tree\n"
+                " q  quit, freeing all data\n\n"
+                "choice: ");
 
-        if (argc > 2 && strcmp(argv[1], "--bench") == 0)  // a for auto
-            strcpy(word, argv[3]);
-        else
-            fgets(word, sizeof word, stdin);
+        if (mode == INPUT_MODE)
+            fgets(buf, WORDMAX, stdin);
+        else if (mode == FILE_MODE) {
+            if (!fgets(buf, WORDMAX, logfile))
+                break;
+        } else if (mode == CMD_MODE)
+            strncpy(buf, paramstr, 1);
+        /* else case may not happen...... */
 
-        switch (*word) {
+        switch (*buf) {
         case 'a':
-            printf("enter word to add: ");
-            if (argc > 2 && strcmp(argv[1], "--bench") == 0)
-                strcpy(Top, argv[4]);
+            printf("\nenter word to add: ");
+            if (mode == FILE_MODE)
+                strcpy(Top, &buf[2]);
+            else if (mode == CMD_MODE)
+                strcpy(Top, &paramstr[1]);
             else if (!fgets(Top, sizeof word, stdin)) {
                 fprintf(stderr, "error: insufficient input.\n");
                 break;
@@ -155,16 +234,18 @@ int main(int argc, char **argv)
                 printf("  %s - inserted in %.10f sec. (%d words in tree)\n",
                        (char *) res, t2 - t1, idx);
             }
-
-            if (argc > 2 && strcmp(argv[1], "--bench") == 0)  // a for auto
-                goto quit;
             break;
         case 'f':
-            printf("find word in tree: ");
-            if (!fgets(word, sizeof word, stdin)) {
+            printf("\nfind word in tree: ");
+            if (mode == FILE_MODE)
+                strcpy(word, &buf[2]);
+            else if (mode == CMD_MODE)
+                strcpy(word, &paramstr[1]);
+            else if (!fgets(word, sizeof word, stdin)) {
                 fprintf(stderr, "error: insufficient input.\n");
                 break;
             }
+
             rmcrlf(word);
             t1 = tvgetf();
 
@@ -188,34 +269,38 @@ int main(int argc, char **argv)
                 printf("  %s not found by bloom filter.\n", word);
             break;
         case 's':
-            printf("find words matching prefix (at least 1 char): ");
-
-            if (argc > 2 && strcmp(argv[1], "--bench") == 0)
-                strcpy(word, argv[4]);
+            printf("\nfind words matching prefix (at least 1 char): ");
+            if (mode == FILE_MODE)
+                strcpy(word, &buf[2]);
+            else if (mode == CMD_MODE)
+                strcpy(word, &paramstr[1]);
             else if (!fgets(word, sizeof word, stdin)) {
                 fprintf(stderr, "error: insufficient input.\n");
                 break;
             }
+
             rmcrlf(word);
             t1 = tvgetf();
             res = tst_search_prefix(root, word, sgl, &sidx, LMAX);
             t2 = tvgetf();
             if (res) {
-                printf("  %s - searched prefix in %.6f sec\n\n", word, t2 - t1);
+                printf("  %s - searched prefix in %.6f sec\n", word, t2 - t1);
                 for (int i = 0; i < sidx; i++)
                     printf("suggest[%d] : %s\n", i, sgl[i]);
             } else
                 printf("  %s - not found\n", word);
-
-            if (argc > 2 && strcmp(argv[1], "--bench") == 0)  // a for auto
-                goto quit;
             break;
         case 'd':
-            printf("enter word to del: ");
-            if (!fgets(word, sizeof word, stdin)) {
+            printf("\nenter word to del: ");
+            if (mode == FILE_MODE)
+                strcpy(word, &buf[2]);
+            else if (mode == CMD_MODE)
+                strcpy(word, &paramstr[1]);
+            else if (!fgets(word, sizeof word, stdin)) {
                 fprintf(stderr, "error: insufficient input.\n");
                 break;
             }
+
             rmcrlf(word);
             printf("  deleting %s\n", word);
             t1 = tvgetf();
@@ -235,16 +320,22 @@ int main(int argc, char **argv)
             fprintf(stderr, "error: invalid selection.\n");
             break;
         }
+
+        if (mode == CMD_MODE)
+            break;
     }
 
+
 quit:
+    if (mode == FILE_MODE)
+        fclose(logfile);
     free(pool);
-    /* for REF mechanism */
     if (CPYmask)
         tst_free(root);
     else
         tst_free_all(root);
 
     bloom_free(bloom);
+
     return 0;
 }
